@@ -26,14 +26,18 @@ SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")
 # Configure the cluster to target using the KUBECONFIG environment variable.
 # Additional parameters can be configured by overriding the variables below.
 
-# Namespace to deploy into
-NAMESPACE="${NAMESPACE:-vault}"
-# Release name to use with Helm
-RELEASE_NAME="${RELEASE_NAME:-vault}"
-# Image to use - by default uses a Bazel built image
-IMAGE="${IMAGE:-local/vault:local}"
-
-# Require helm available on PATH
-check_tool kubectl
-check_tool helm
-require_image "local/vault:local" "//devel/addon/vault:bundle"
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo update
+helm install vault hashicorp/vault
+helm upgrade \
+  --debug \
+  --install \
+  --wait \
+  --namespace hashicorp \
+  --create-namespace \
+  --version "${CHART_VERSION}" \
+  --set image.tag="${IMAGE_TAG}" \
+  --set initImage.tag="${PRE_IMAGE_TAG}" \
+  vault \
+  hashicorp/vault
+  
